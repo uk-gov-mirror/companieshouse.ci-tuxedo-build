@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.19.0
+
 FROM centos:centos7.9.2009 AS builder
 
 ARG AWS_ACCESS_KEY_ID
