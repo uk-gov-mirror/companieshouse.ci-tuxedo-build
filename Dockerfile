@@ -1,7 +1,6 @@
-FROM centos:centos7.9.2009 AS builder
+# syntax=docker/dockerfile:1.19.0
 
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_SECRET_ACCESS_KEY
+FROM centos:centos7.9.2009 AS builder
 
 ARG informix_sdk_version
 ARG oracle_database_version
@@ -18,17 +17,23 @@ RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zi
     && unzip awscliv2.zip \
     && ./aws/install
 
-RUN mkdir -p /opt/tuxedo/${tuxedo_version} \
+RUN --mount=type=secret,id=aws-access-key-id,env=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=aws-secret-access-key,env=AWS_SECRET_ACCESS_KEY \
+    mkdir -p /opt/tuxedo/${tuxedo_version} \
     && aws s3 cp s3://${resource_bucket_name}/tuxedo/tuxedo-${tuxedo_version}.tar.gz . \
     && tar -xvzf tuxedo-${tuxedo_version}.tar.gz -C /opt/tuxedo/${tuxedo_version} \
     && chown -R root:root /opt/tuxedo/${tuxedo_version}
 
-RUN mkdir -p /opt/oracle/${oracle_database_version} \
+RUN --mount=type=secret,id=aws-access-key-id,env=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=aws-secret-access-key,env=AWS_SECRET_ACCESS_KEY \
+    mkdir -p /opt/oracle/${oracle_database_version} \
     && aws s3 cp s3://${resource_bucket_name}/oracle/oracle-database-${oracle_database_version}.tar.gz . \
     && tar -xvzf oracle-database-${oracle_database_version}.tar.gz -C /opt/oracle/${oracle_database_version} \
     && chown -R root:root /opt/tuxedo/${tuxedo_version}
 
-RUN mkdir -p /opt/oracle-instant-client/${oracle_instant_client_version} \
+RUN --mount=type=secret,id=aws-access-key-id,env=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=aws-secret-access-key,env=AWS_SECRET_ACCESS_KEY \
+    mkdir -p /opt/oracle-instant-client/${oracle_instant_client_version} \
     && for package_name in basic precomp sdk; do \
         aws s3 cp s3://${resource_bucket_name}/oracle/instant-client/instantclient-${package_name}-linux-${oracle_instant_client_version}.zip . \
         && unzip -d /opt/oracle-instant-client/${oracle_instant_client_version} instantclient-${package_name}-linux-${oracle_instant_client_version}.zip \
@@ -36,15 +41,21 @@ RUN mkdir -p /opt/oracle-instant-client/${oracle_instant_client_version} \
     done \
     && chown -R root:root /opt/oracle-instant-client/${oracle_instant_client_version}
 
-RUN mkdir -p /opt/informix-client-sdk/${informix_sdk_version} \
+RUN --mount=type=secret,id=aws-access-key-id,env=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=aws-secret-access-key,env=AWS_SECRET_ACCESS_KEY \
+    mkdir -p /opt/informix-client-sdk/${informix_sdk_version} \
     && aws s3 cp s3://${resource_bucket_name}/informix/informix-sdk-${informix_sdk_version}.tar.gz . \
     && tar -xvzf informix-sdk-${informix_sdk_version}.tar.gz -C /opt/informix-client-sdk/${informix_sdk_version} \
     && chown -R root:root /opt/informix-client-sdk/${informix_sdk_version}
 
-RUN aws s3 cp s3://${resource_bucket_name}/libraries/c/i686/libstdc++-libc6.2-2.so.3 /usr/lib \
+RUN --mount=type=secret,id=aws-access-key-id,env=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=aws-secret-access-key,env=AWS_SECRET_ACCESS_KEY \
+    aws s3 cp s3://${resource_bucket_name}/libraries/c/i686/libstdc++-libc6.2-2.so.3 /usr/lib \
     && chmod 755 /usr/lib/libstdc++-libc6.2-2.so.3
 
-RUN aws s3 cp s3://${resource_bucket_name}/licenses/tuxedo/tuxedo-${tuxedo_version} /opt/tuxedo/${tuxedo_version}/udataobj/lic.txt \
+RUN --mount=type=secret,id=aws-access-key-id,env=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=aws-secret-access-key,env=AWS_SECRET_ACCESS_KEY \
+    aws s3 cp s3://${resource_bucket_name}/licenses/tuxedo/tuxedo-${tuxedo_version} /opt/tuxedo/${tuxedo_version}/udataobj/lic.txt \
     && chmod 755 /opt/tuxedo/${tuxedo_version}/udataobj/lic.txt
 
 FROM centos:centos7.9.2009
